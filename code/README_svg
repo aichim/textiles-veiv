@@ -1,0 +1,10 @@
+This is a fork of http://source.netsurf-browser.org/libsvgtiny.git
+
+I forked from a while back when the library still depended on libxml2.
+Since then the library moved on to "libdom" which makes the dependency
+chain quite long and the libxml2 version works nice for my needs.
+
+My primary changes are to the example app. It used to depend on X11 and
+Cairo. I replaced calls to Cairo with simple stubs that print to stdout.
+
+Lukas Murmann June 2013
