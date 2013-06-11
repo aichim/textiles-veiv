@@ -8,7 +8,7 @@ find_package (Eigen REQUIRED)
 include_directories (${EIGEN_INCLUDE_DIR})
 
 find_package (LibXml2 REQUIRED)
-include_directories (${LIBXML2_INCLUDE_DIRS})
+include_directories (${LIBXML2_INCLUDE_DIR})
 
 find_package (Boost REQUIRED)
 include_directories (${Boost_INCLUDE_DIR})
@@ -16,11 +16,13 @@ include_directories (${Boost_INCLUDE_DIR})
 
 include_directories (include)
 
-SET (LIB_INCS include/utils.h)
+SET (LIB_INCS include/utils.h
+              include/drawing.h)
 
 SET (LIB_IMPLS )
 
-SET (LIB_SRCS src/utils.cpp)
+SET (LIB_SRCS src/utils.cpp
+              src/drawing.cpp)
 
 ADD_LIBRARY (lib_textiles_veiv ${LIB_INCS} ${LIB_IMPLS} ${LIB_SRCS})
 TARGET_LINK_LIBRARIES (lib_textiles_veiv ${LIBXML2_LIBRARIES} ${Boost_LIBRARIES})
