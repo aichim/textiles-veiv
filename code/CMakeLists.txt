@@ -24,8 +24,7 @@ SET (LIB_IMPLS )
 
 SET (LIB_SRCS src/utils.cpp
               src/drawing.cpp
-
-              src/example.c
+              src/main_tests.cpp
               src/svgtiny.c
               src/svgtiny_gradient.c
               src/svgtiny_list.c)
