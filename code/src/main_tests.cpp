@@ -1,18 +1,21 @@
 #include <iostream>
 #include "utils.h"
 #include "drawing.h"
+#include "SVGReader.h"
 
 int
 main (int argc,
       char **argv) {
 
-    if (argc != 2) {
+  if (argc != 2) {
 		fprintf(stderr, "Usage: %s FILE\n", argv[0]);
 		return 1;
 	}
-    std::string svg_file = argv[1];
-    veiv::Drawing drawing;
-    bool success = veiv::readSVG(svg_file, drawing);
+  std::string svg_file = argv[1];
+  veiv::Drawing::Ptr drawing(new veiv::Drawing());
+  veiv::SVGReader reader;
+  reader.setInputDrawing(drawing);
+  bool success = reader.readFile(svg_file);
 
-    return (!success);
+  return (!success);
 }

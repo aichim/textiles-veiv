@@ -7,7 +7,4 @@
 namespace veiv
 {
 
-bool
-readSVG (const std::string &filename, Drawing &drawing);
-
 }
