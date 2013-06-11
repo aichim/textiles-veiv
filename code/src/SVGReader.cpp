@@ -7,7 +7,6 @@
 veiv::SVGReader::SVGReader ()
 {}
 
-
 bool
 veiv::SVGReader::readFile (const std::string & filename, Drawing::Ptr drawing)
 {
@@ -18,6 +17,10 @@ veiv::SVGReader::readFile (const std::string & filename, Drawing::Ptr drawing)
   size_t n;
   svgtiny_code code;
 
+  /* Note: I don't reset this pointer at the end of the function so it 
+           holds the references until the reader is deallocated.
+           Should fix this ...
+   */
   this->drawing_ = drawing;
 
   const char * svg_path = filename.c_str();
