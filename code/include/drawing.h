@@ -6,14 +6,29 @@
 
 namespace veiv
 {
+typedef boost::geometry::model::d2::point_xy<double> Point2d;
+typedef boost::geometry::model::polygon<Point2d> Polygon;
+
+struct IntersectionData
+{
+  size_t poly_index_src;
+  size_t poly_index_tgt;
+  size_t segment_index_src;
+  size_t segment_index_tgt;
+
+  Point2d point;
+};
+
 class Drawing
 {
 public:
-  typedef boost::geometry::model::d2::point_xy<double> Point2d;
-  typedef boost::geometry::model::polygon<Point2d> Polygon;
+  typedef boost::shared_ptr<Drawing> Ptr;
 
   Drawing ();
 
-  std::vector<Polygon> polygons;
+  void
+  computeIntersections (std::vector<IntersectionData> &result);
+
+  std::vector<Polygon> polygons_;
 };
 }

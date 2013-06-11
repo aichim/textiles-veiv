@@ -65,10 +65,18 @@ struct svgtiny_named_color {
 };
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct svgtiny_diagram *svgtiny_create(void);
 svgtiny_code svgtiny_parse(struct svgtiny_diagram *diagram,
 		const char *buffer, size_t size, const char *url,
 		int width, int height);
 void svgtiny_free(struct svgtiny_diagram *svg);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif
