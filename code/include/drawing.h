@@ -9,7 +9,8 @@ namespace veiv
 class Drawing
 {
 public:
-  typedef boost::geometry::model::polygon<boost::geometry::model::d2::point_xy<double> > Polygon;
+  typedef boost::geometry::model::d2::point_xy<double> Point2d;
+  typedef boost::geometry::model::polygon<Point2d> Polygon;
 
   Drawing ();
 
