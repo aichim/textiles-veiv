@@ -13,7 +13,6 @@ include_directories (${LIBXML2_INCLUDE_DIR})
 find_package (Boost REQUIRED)
 include_directories (${Boost_INCLUDE_DIR})
 
-
 include_directories (include)
 
 SET (LIB_INCS include/utils.h
