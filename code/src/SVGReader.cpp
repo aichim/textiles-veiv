@@ -143,15 +143,31 @@ void veiv::SVGReader::render_path(struct svgtiny_shape *path) {
 }
 
 
-void veiv::SVGReader::new_path() {
+void veiv::SVGReader::new_path()
+{
+  Polygon new_poly;
+  drawing_->polygons_.push_back (new_poly);
 }
-void veiv::SVGReader::close_path() {
+
+void veiv::SVGReader::close_path()
+{
+  /// Re-add the last point to close the curve
+  boost::geometry::append (drawing_->polygons_.back (), drawing_->polygons_.back ().outer ().front ());
 }
-void veiv::SVGReader::move_to(const Point2d & p) {
-  printf("Move %.1f, %.1f\n", p.x(), p.y());
+
+void
+veiv::SVGReader::move_to(const Point2d & p)
+{
+  line_to (p);
 }
-void veiv::SVGReader::line_to(const Point2d & p) {
+
+void
+veiv::SVGReader::line_to(const Point2d & p)
+{
+  boost::geometry::append (drawing_->polygons_.back (), p);
 }
+
+
 void veiv::SVGReader::curve_to(const Point2d & p1,
                                const Point2d & p2,
                                const Point2d & p3) {

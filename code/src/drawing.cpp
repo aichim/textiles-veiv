@@ -22,6 +22,9 @@ veiv::Drawing::computeIntersections (std::vector<IntersectionData> &result)
       if (intersection_points.size () == 0)
         continue;
 
+      printf ("Found %zu intersections between poly %zu and poly %zu\n",
+              intersection_points.size (), poly_src_i, poly_tgt_i);
+
       /// Check on which segments the intersection points fall on
       for (size_t intersection_i = 0; intersection_i < intersection_points.size (); ++intersection_i)
       {
