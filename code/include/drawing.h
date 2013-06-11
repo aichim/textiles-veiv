@@ -22,6 +22,7 @@ struct IntersectionData
 class Drawing
 {
 public:
+  typedef boost::shared_ptr<Drawing> Ptr;
 
   Drawing ();
 
