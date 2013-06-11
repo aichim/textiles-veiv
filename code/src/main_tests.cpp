@@ -14,8 +14,7 @@ main (int argc,
   std::string svg_file = argv[1];
   veiv::Drawing::Ptr drawing(new veiv::Drawing());
   veiv::SVGReader reader;
-  reader.setInputDrawing(drawing);
-  bool success = reader.readFile(svg_file);
+  bool success = reader.readFile(svg_file, drawing);
 
   return (!success);
 }

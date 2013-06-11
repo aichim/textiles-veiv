@@ -3,23 +3,18 @@
 #include "drawing.h"
 
 struct svgtiny_shape;
+
 namespace veiv
 {
 class SVGReader
 {
 public:
   SVGReader ();
-
-  void
-  setInputDrawing (Drawing::Ptr drawing)
-  { drawing_ = drawing; }
-
-  bool
-  readFile (std::string &filename);
-
-  Drawing::Ptr drawing_;
+  bool readFile (const std::string & filename, Drawing::Ptr drawing);
 
 private:
+  Drawing::Ptr drawing_;
+
   void render_path(svgtiny_shape *path);
 
   void new_path();
