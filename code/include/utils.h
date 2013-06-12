@@ -4,6 +4,8 @@
 
 #include "drawing.h"
 
+#include <Eigen/Core>
+
 namespace veiv
 {
   typedef boost::geometry::model::point<double, 3, boost::geometry::cs::cartesian> Point3;
@@ -18,4 +20,10 @@ namespace veiv
                           const size_t num_circle_samples,
                           const double sampling_dist,
                           std::vector<std::vector<Point3> > &result);
+
+
+  void
+  quadsBetweenCircles (std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > &curr_circle,
+                       std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > &prev_circle,
+                       std::vector<std::vector<Point3> > &quads);
 }

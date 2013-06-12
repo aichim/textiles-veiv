@@ -79,7 +79,7 @@ main (int argc,
     weave_3d[poly_i].resize (weave_3d[poly_i].size () - 1);
 
   std::vector<std::vector<Point3> > weave_tube;
-  veiv::extrudeCircleAlongPath (weave_3d, 6, 20, 5, weave_tube);
+  veiv::extrudeCircleAlongPath (weave_3d, 15, 20, 5, weave_tube);
   output_filename = "output_tube.obj";
   veiv::saveOBJ (output_filename, weave_tube);
 
