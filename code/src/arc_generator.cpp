@@ -573,7 +573,7 @@ void sort_intersection_info(const std::vector< std::vector<Point2> > &curve_poin
 }
 
 
-void generate_arc(const std::vector< std::vector<Point2> > &curve_points,
+void generate_arc_without_duplicate_vertices(const std::vector< std::vector<Point2> > &curve_points,
 		const std::vector<IntersectionData> &intersection_data,
 		double radius,
 		std::vector< std::vector<Point3> > &output_curve_points)
@@ -588,6 +588,27 @@ void generate_arc(const std::vector< std::vector<Point2> > &curve_points,
 
 	// enumerate all intersection points within one curve, and raise arcs if necessary
 	raise_curves(curve_points, curve_intersection_points, intesecting_curve_idx, curve_intersection_segment_idx, radius, output_curve_points);
+}
+
+
+void generate_arc(const std::vector< std::vector<Point2> > &curve_points,
+		const std::vector<IntersectionData> &intersection_data,
+		double radius,
+		std::vector< std::vector<Point3> > &output_curve_points)
+{
+	// Get rid of duplicate end vertices
+	std::vector< std::vector<Point2> > simplified_points = curve_points;
+	for(unsigned int i = 0; i < simplified_points.size(); i++){
+		simplified_points[i].pop_back();
+	}
+
+	generate_arc_without_duplicate_vertices(simplified_points,
+			intersection_data, radius, output_curve_points);
+
+	// Add back duplicate points
+	for(unsigned int i = 0; i < output_curve_points.size(); i++){
+		output_curve_points[i].push_back(output_curve_points[i].front());
+	}
 }
 
 }
