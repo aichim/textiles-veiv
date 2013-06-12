@@ -1,5 +1,9 @@
-#include <boost/geometry.hpp>
+#include "arc_generator.h"
+
 #include "drawing.h"
+
+
+#include <boost/geometry.hpp>
 #include <vector>
 #include <set>
 #include <map>
@@ -10,7 +14,7 @@
 
 namespace veiv{
 typedef boost::geometry::model::point<double, 3, boost::geometry::cs::cartesian> Point3;
-typedef Drawing::Point2d Point2;
+typedef Point2d Point2;
 
 #define OVERHANG_ANGLE 50
 #define LOWER_RADIUS_RATIO 6
