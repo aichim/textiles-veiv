@@ -38,7 +38,7 @@ Point3 augmented_point2(const Point2 &pt, double z)
 }
 
 // Use SVD to figure out the pricipal direction with small variance
-void PCA_2D(const std::vector<Point2> &pts, Point2 &centroid, Point2 &dir)
+void PCA_2D(const std::deque<Point2> &pts, Point2 &centroid, Point2 &dir)
 {
 	typedef Eigen::Matrix<double, Eigen::Dynamic, 2> MatrixX2d;
 
@@ -51,8 +51,8 @@ void PCA_2D(const std::vector<Point2> &pts, Point2 &centroid, Point2 &dir)
 
 	// Compute centroid
 	Eigen::Matrix<double, 1, 2> mean_val = mat.colwise().mean();
-	centroid.x() = mean_val(0,0);
-	centroid.y() = mean_val(0,1);
+	centroid.x(mean_val(0,0));
+	centroid.y(mean_val(0,1));
 
 	for(int i = 0; i < m; i++){
 		mat.row(i) -= mean_val;
@@ -60,8 +60,8 @@ void PCA_2D(const std::vector<Point2> &pts, Point2 &centroid, Point2 &dir)
 
 	Eigen::JacobiSVD<MatrixX2d> jsvd(mat, Eigen::ComputeFullV);
 	Eigen::Vector2d vec = jsvd.matrixV().col(1);
-	dir.x() = vec(0);
-	dir.y() = vec(1);
+	dir.x(vec(0));
+	dir.y(vec(1));
 }
 
 
@@ -74,7 +74,7 @@ void sample_lower_curve(const std::vector<Point2> &curve, const Point2 &mid_poin
 
 	int m = curve.size();
 	int idx_increment[] = {-1, 1};
-	int start_idx = { (segment_idx+1)%m, segment_idx };
+	int start_idx[] = { (segment_idx+1)%m, segment_idx };
 	for(int i = 0; i < 2; i++){
 		double total_length = 0.0;
 		int cur_idx = start_idx[i];
@@ -133,7 +133,8 @@ int find_interval(const std::vector<double> &val, double value){
 }
 
 
-void augment_inbetween_sequence(const std::vector<Point2> &curve_seq, int prev_end_idx, int next_start_idx, std::vector<Point3> &augmented_sequence)
+void augment_inbetween_sequence(const std::vector<Point2> &curve_seq, int prev_end_idx, int next_start_idx,
+		double radius, std::vector<Point3> &augmented_sequence)
 {
 	int m = curve_seq.size();
 	if((next_start_idx + 1) % m == prev_end_idx){
@@ -158,7 +159,8 @@ void raise_single_sequence(const std::vector<Point2> &curve_seq, double radius, 
 	int m = curve_seq.size();
 	accum_length.push_back(0);
 	for(int i = 0; i < m - 1; i++){
-		accum_length.push_back(accum_length.end() + boost::geometry::distance(curve_seq[i], curve_seq[i+1]));
+		double dist = boost::geometry::distance(curve_seq[i], curve_seq[i+1]);
+		accum_length.push_back(accum_length.back() + dist);
 	}
 
 	double flat_length = radius * UPPER_RADIUS_RATIO ;
@@ -183,19 +185,19 @@ void raise_single_sequence(const std::vector<Point2> &curve_seq, double radius, 
 	lifted_sequence.push_back(augmented_point2(curve_seq.front(), radius));
 
 	for(int i = 0; i <= slope_length_idx ; i++){
-		lifted_seuence.push_back(augmented_point2(curve_seq[i], min_h + accum_length[i] * overhang_ratio));
+		lifted_sequence.push_back(augmented_point2(curve_seq[i], min_h + accum_length[i] * overhang_ratio));
 	}
 
-	lifted_seuence.push_back(augmented_point2(slope_length_pt, max_h));
+	lifted_sequence.push_back(augmented_point2(slope_length_pt, max_h));
 
 	for(int i = slope_length_idx + 1; i <= end_slope_length_idx ; i++){
-		lifted_seuence.push_back(augmented_point2(curve_seq[i], max_h));
+		lifted_sequence.push_back(augmented_point2(curve_seq[i], max_h));
 	}
 
-	lifted_seuence.push_back(augmented_point2(end_slope_length_pt, max_h));
+	lifted_sequence.push_back(augmented_point2(end_slope_length_pt, max_h));
 
 	for(int i = end_slope_length_idx + 1; i < m ; i++){
-		lifted_seuence.push_back(augmented_point2(curve_seq[i], min_h + accum_length.back() - accum_length[i] * overhang_ratio));
+		lifted_sequence.push_back(augmented_point2(curve_seq[i], min_h + accum_length.back() - accum_length[i] * overhang_ratio));
 	}
 
 	lifted_sequence.push_back(augmented_point2(curve_seq.back(), radius));
@@ -229,7 +231,7 @@ void sample_upper_curve(const Point2 &int_pt, const Point2 &principal_dir,
 
 	// collect points until they are far away enough from the intersection point
 	int idx_increment[] = {-1, 1};
-	int start_idx = { (upper_segment_idx+1)%m, upper_segment_idx };
+	int start_idx[] = { (upper_segment_idx+1)%m, upper_segment_idx };
 	for(int i = 0; i < 2; i++){
 		for(int k = 0; k < m-1; k++){
 			int cur_idx = start_idx[i] + idx_increment[i] * k;
@@ -240,7 +242,7 @@ void sample_upper_curve(const Point2 &int_pt, const Point2 &principal_dir,
 				cur_idx = cur_idx % m;
 			}
 
-			Point2 candidate_pt = curve[cur_idx];
+			Point2 candidate_pt = upper_curve[cur_idx];
 			boost::geometry::subtract_point(candidate_pt, int_pt);
 			double cur_dist = boost::geometry::dot_product(candidate_pt, principal_dir);
 
@@ -249,7 +251,7 @@ void sample_upper_curve(const Point2 &int_pt, const Point2 &principal_dir,
 				Point2 cur_end_pt = i == 0 ? upper_2d_sample.front() : upper_2d_sample.back();
 				Eigen::Vector2d end_pt_eigen, candidate_pt_eigen, mid_int_pt_eigen, principal_dir_eigen;
 				to_eigen_2d(cur_end_pt, end_pt_eigen);
-				to_eigen_2d(curve[cur_idx], candidate_pt_eigen);
+				to_eigen_2d(upper_curve[cur_idx], candidate_pt_eigen);
 				to_eigen_2d(int_pt, mid_int_pt_eigen);
 				to_eigen_2d(principal_dir, principal_dir_eigen);
 
@@ -349,7 +351,7 @@ void process_intersection_pair(const std::vector< std::vector<Point2> > &curve_p
 	int m = curve_intersection_points[neighbor_curve_idx].size();
 	int neighbor_curve_intpt_idx = -1;
 	for(int i = 0; i < m; i++){
-		double dist = boost::geometry::distance(start_pt, pts[k]);
+		double dist = boost::geometry::distance(intersection_point, pts[k]);
 		if(dist < min_dist){
 			neighbor_curve_intpt_idx = i;
 			min_dist = dist;
