@@ -1,3 +1,6 @@
+#ifndef _ARC_GENERATOR_H_
+#define _ARC_GENERATOR_H_
+
 #include <boost/geometry.hpp>
 #include "drawing.h"
 #include <vector>
@@ -115,4 +118,4 @@ void generate_arc (const std::vector< std::vector<Point2> > &curve_points,
 
 }
 
-
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _SVGREADER_H_
+#define _SVGREADER_H_
 
 #include "drawing.h"
 
@@ -26,3 +27,5 @@ private:
                 const Point2d &);
 };
 }
+
+#endif

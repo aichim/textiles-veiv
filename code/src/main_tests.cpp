@@ -78,7 +78,7 @@ main (int argc,
   //    weave_3d.push_back (polygon);
   //  }
 
-    veiv::generate_arc(curves_2d, intersections, 5, weave_3d);
+    veiv::generate_arc(curves_2d, intersections, 1, weave_3d);
     		//std::vector< std::vector<Point3> > &output_curve_points)
 
     std::string output_filename ("output.obj");

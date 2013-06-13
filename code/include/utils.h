@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _UTILS_H_
+#define _UTILS_H_
 
 #include <string>
 
@@ -27,3 +28,5 @@ namespace veiv
                        std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > &prev_circle,
                        std::vector<std::vector<Point3> > &quads);
 }
+
+#endif

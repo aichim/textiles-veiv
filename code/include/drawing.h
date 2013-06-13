@@ -1,8 +1,10 @@
-#pragma once
+#ifndef _DRAWING_H_
+#define _DRAWING_H_
 
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/point_xy.hpp>
 #include <boost/geometry/geometries/polygon.hpp>
+#include <boost/shared_ptr.hpp>
 
 namespace veiv
 {
@@ -32,3 +34,5 @@ public:
   std::vector<Polygon> polygons_;
 };
 }
+
+#endif

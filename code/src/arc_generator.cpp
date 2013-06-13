@@ -11,6 +11,7 @@
 #include <Eigen/Dense>
 #include <deque>
 #include <cmath>
+#include <iostream>
 
 namespace veiv{
 //typedef boost::geometry::model::point<double, 3, boost::geometry::cs::cartesian> Point3;
@@ -41,6 +42,13 @@ Point3 augmented_point2(const Point2 &pt, double z)
 	return Point3(pt.x(), pt.y(), z);
 }
 
+void augmented_point2_to_eigen_vec3(const Point2 &pt, Eigen::Vector3d &eigen_vec)
+{
+	eigen_vec(0) = pt.x();
+	eigen_vec(1) = pt.y();
+	eigen_vec(2) = 0.0;
+}
+
 // Use SVD to figure out the pricipal direction with small variance
 void PCA_2D(const std::deque<Point2> &pts, Point2 &centroid, Point2 &dir)
 {
@@ -61,6 +69,8 @@ void PCA_2D(const std::deque<Point2> &pts, Point2 &centroid, Point2 &dir)
 	for(int i = 0; i < m; i++){
 		mat.row(i) -= mean_val;
 	}
+
+	std::cout << mat << std::endl;
 
 	Eigen::JacobiSVD<MatrixX2d> jsvd(mat, Eigen::ComputeFullV);
 	Eigen::Vector2d vec = jsvd.matrixV().col(1);
@@ -126,7 +136,7 @@ void sample_lower_curve(const std::vector<Point2> &curve, const Point2 &mid_poin
 }
 
 int find_interval(const std::vector<double> &val, double value){
-	int m = 1;
+	int m = val.size();
 	for(int i = 1; i < m; i++){
 		if(val[i] >= value){
 			return i-1;
@@ -141,9 +151,9 @@ void augment_inbetween_sequence(const std::vector<Point2> &curve_seq, int prev_e
 		double radius, std::vector<Point3> &augmented_sequence)
 {
 	int m = curve_seq.size();
-	if((next_start_idx + 1) % m == prev_end_idx){
-		return;
-	}
+//	if((next_start_idx + 1) % m == prev_end_idx){
+//		return;
+//	}
 
 	int cur_idx = prev_end_idx;
 	while(true){
@@ -182,9 +192,10 @@ void raise_single_sequence(const std::deque<Point2> &curve_seq, double radius, s
 	double end_slope_length = flat_length + slope_length;
 	double min_h = radius * 2;
 	double max_h = min_h + slope_length * overhang_ratio;
-	double mid_length = accum_length.back() * 0.5;
+	//double mid_length = accum_length.back() * 0.5;
 
-	int mid_val_idx = find_interval(accum_length, mid_length), slope_length_idx = find_interval(accum_length, slope_length),
+	//int mid_val_idx = find_interval(accum_length, mid_length),
+	int slope_length_idx = find_interval(accum_length, slope_length),
 			end_slope_length_idx = find_interval(accum_length, end_slope_length);
 
 	Point2 slope_length_pt = interpolate_point2(curve_seq[slope_length_idx], curve_seq[slope_length_idx+1],
@@ -210,7 +221,7 @@ void raise_single_sequence(const std::deque<Point2> &curve_seq, double radius, s
 	lifted_sequence.push_back(augmented_point2(end_slope_length_pt, max_h));
 
 	for(int i = end_slope_length_idx + 1; i < m ; i++){
-		lifted_sequence.push_back(augmented_point2(curve_seq[i], min_h + accum_length.back() - accum_length[i] * overhang_ratio));
+		lifted_sequence.push_back(augmented_point2(curve_seq[i], min_h + (accum_length.back() - accum_length[i]) * overhang_ratio));
 	}
 
 	lifted_sequence.push_back(augmented_point2(curve_seq.back(), radius));
@@ -223,7 +234,7 @@ void sample_upper_curve(const Point2 &int_pt, const Point2 &principal_dir,
 		std::vector<Point3> &lifted_upper_samples,
 		int &upper_start_idx, int &upper_end_idx)
 {
-	double max_dist = 1e-10, min_dist = 1e10;
+	double max_dist = -1e10, min_dist = 1e10;
 	Eigen::Vector2d dir(principal_dir.x(), principal_dir.y()), int_pt_eigen(int_pt.x(), int_pt.y());
 	for(int i = 0; i < static_cast<int>(lower_sample.size()); i++){
 		Eigen::Vector2d cur_pt(lower_sample[i].x(), lower_sample[i].y());
@@ -246,7 +257,7 @@ void sample_upper_curve(const Point2 &int_pt, const Point2 &principal_dir,
 	int idx_increment[] = {-1, 1};
 	int start_idx[] = { (upper_segment_idx+1)%m, upper_segment_idx };
 	for(int i = 0; i < 2; i++){
-		for(int k = 0; k < m-1; k++){
+		for(int k = 1; k < m-1; k++){
 			int cur_idx = start_idx[i] + idx_increment[i] * k;
 			if(cur_idx < 0){
 				cur_idx += m;
@@ -259,7 +270,7 @@ void sample_upper_curve(const Point2 &int_pt, const Point2 &principal_dir,
 			boost::geometry::subtract_point(candidate_pt, int_pt);
 			double cur_dist = boost::geometry::dot_product(candidate_pt, principal_dir);
 
-			bool finish = i == 0 ? cur_dist <= upper_min_dist : cur_dist >= upper_max_dist;
+			bool finish = cur_dist <= upper_min_dist || cur_dist >= upper_max_dist;
 			if(finish){
 				Point2 cur_end_pt = i == 0 ? upper_2d_sample.front() : upper_2d_sample.back();
 				Eigen::Vector2d end_pt_eigen, candidate_pt_eigen, mid_int_pt_eigen, principal_dir_eigen;
@@ -270,17 +281,17 @@ void sample_upper_curve(const Point2 &int_pt, const Point2 &principal_dir,
 
 
 				double prev_end_dist = principal_dir_eigen.dot(end_pt_eigen - mid_int_pt_eigen);
-				double next_end_pt_dist = principal_dir_eigen.dot(candidate_pt_eigen - mid_int_pt_eigen);
-				double limit_dist = i == 0 ? upper_min_dist : upper_max_dist;
+				//double next_end_pt_dist = principal_dir_eigen.dot(candidate_pt_eigen - mid_int_pt_eigen);
+				double next_end_pt_dist = cur_dist;
+				double limit_dist = cur_dist <= upper_min_dist ? upper_min_dist : upper_max_dist;
 
-				Eigen::Vector2d final_end_pt = end_pt_eigen + (candidate_pt_eigen - end_pt_eigen) * (( limit_dist - prev_end_dist ) / (next_end_pt_dist - prev_end_dist));
-
+				Point2 final_end_pt = interpolate_point2(upper_curve[cur_idx], cur_end_pt, next_end_pt_dist, prev_end_dist, limit_dist);
 				if(i==0){
-					upper_2d_sample.push_front(from_eigen_2d(final_end_pt));
+					upper_2d_sample.push_front(final_end_pt);
 					upper_start_idx = cur_idx;
 				}
 				else{
-					upper_2d_sample.push_back(from_eigen_2d(final_end_pt));
+					upper_2d_sample.push_back(final_end_pt);
 					upper_end_idx = cur_idx;
 				}
 
@@ -387,6 +398,9 @@ void process_intersection_pair(const std::vector< std::vector<Point2> > &curve_p
 				inserted_seq_end_idx[neighbor_curve_idx][neighbor_curve_intpt_idx].first,
 				inserted_seq_end_idx[neighbor_curve_idx][neighbor_curve_intpt_idx].second);
 	}
+
+	raising_status[current_curve_idx][current_curve_intpt_idx] = current_curve_is_up ? RAISING_UP : RAISING_DOWN;
+	raising_status[neighbor_curve_idx][neighbor_curve_intpt_idx] = current_curve_is_up ? RAISING_DOWN : RAISING_UP;
 }
 
 // Recursively process each curve
@@ -413,7 +427,7 @@ void process_one_curve(const std::vector< std::vector<Point2> > &curve_points,
 		}
 	}
 
-	std::vector<int> next_neighbors;
+	std::set<int> next_neighbors;
 
 
 	if(totally_new){
@@ -424,7 +438,7 @@ void process_one_curve(const std::vector< std::vector<Point2> > &curve_points,
 					current_curve, i, current_curve_up, radius, raising_status, inserted_seq_end_idx, inserted_seq);
 		}
 
-		next_neighbors = intesecting_curve_idx[current_curve];
+		next_neighbors.insert(intesecting_curve_idx[current_curve].begin(), intesecting_curve_idx[current_curve].end());
 	}
 	else{
 		// Process intersection points based on its preceeding points
@@ -440,7 +454,7 @@ void process_one_curve(const std::vector< std::vector<Point2> > &curve_points,
 					process_intersection_pair(curve_points, curve_intersection_points, curve_intersection_segment_idx, intesecting_curve_idx,
 							current_curve, current_point_idx, current_curve_up, radius, raising_status, inserted_seq_end_idx, inserted_seq);
 
-					next_neighbors.push_back(intesecting_curve_idx[current_curve][current_point_idx]);
+					next_neighbors.insert(intesecting_curve_idx[current_curve][current_point_idx]);
 
 					break;
 				}
@@ -452,9 +466,9 @@ void process_one_curve(const std::vector< std::vector<Point2> > &curve_points,
 		}
 	}
 
-	for(unsigned int k = 0; k < next_neighbors.size(); k++){
+	for(std::set<int>::iterator iter = next_neighbors.begin(); iter != next_neighbors.end(); ++ iter){
 		process_one_curve(curve_points, curve_intersection_points, intesecting_curve_idx, curve_intersection_segment_idx,
-			radius, next_neighbors[k], raising_status, inserted_seq_end_idx, inserted_seq);
+			radius, *iter, raising_status, inserted_seq_end_idx, inserted_seq);
 	}
 }
 
@@ -502,7 +516,7 @@ void raise_curves(const std::vector< std::vector<Point2> > &curve_points, const 
 	std::vector< std::vector<std::pair<int, int> > > inserted_seq_end_idx;
 	std::vector< std::vector< std::vector<Point3> > > inserted_seq;
 
-	initialize_sequence_family(curve_intersection_segment_idx, raising_status);
+	initialize_sequence_family(curve_intersection_segment_idx, RAISING_UNDECIDED, raising_status);
 	initialize_sequence_family(curve_intersection_segment_idx, std::make_pair(-1, -1), inserted_seq_end_idx);
 	initialize_sequence_family(curve_intersection_segment_idx, inserted_seq);
 
@@ -590,6 +604,34 @@ void generate_arc_without_duplicate_vertices(const std::vector< std::vector<Poin
 	raise_curves(curve_points, curve_intersection_points, intesecting_curve_idx, curve_intersection_segment_idx, radius, output_curve_points);
 }
 
+
+//void check_orientation(const std::vector< std::vector<Point2> > &curve_points)
+//{
+//	int m = curve_points.size();
+//	std::vector<Eigen::Vector3d> normal_vec;
+//
+//	for(int i = 0; i < m; i++){
+//		int n = curve_points[i].size();
+//		std::vector<Eigen::Vector3d> edge_vecs;
+//		for(int j = 1; j < n; j++){
+//			Eigen::Vector3d cur_vec(curve_points[j].x() - curve_points[j-1].x(),
+//					curve_points[j].y() - curve_points[j-1].y(), 0.0);
+//			cur_vec /= cur_vec.norm();
+//			edge_vecs.push_back(cur_vec);
+//		}
+//
+//		double max_innerprod = 0.0;
+//		Eigen::Vector3d best_normal(0.0, 0.0, 0.0);
+//
+//		for(int j = 1; j < n-1; j++){
+//			double cur_innerprod = std::abs(edge_vecs[j].dot(edge_vecs[j-1]));
+//			if(cur_innerprod > max_innerprod){
+//				best_normal = edge_vecs[j].cross(edge_vecs[j-1]);
+//				max_innerprod = cur_innerprod;
+//			}
+//		}
+//	}
+//}
 
 void generate_arc(const std::vector< std::vector<Point2> > &curve_points,
 		const std::vector<IntersectionData> &intersection_data,
