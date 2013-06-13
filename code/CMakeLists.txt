@@ -25,7 +25,8 @@ SET (LIB_INCS include/utils.h
               include/svgtiny_internal.h
               include/SVGReader.h
               include/arc_generator.h
-              include/mesh.h)
+              include/mesh.h
+              include/conewarp.h)
 
 SET (LIB_IMPLS )
 
@@ -37,7 +38,8 @@ SET (LIB_SRCS src/utils.cpp
               src/svgtiny_list.c
               src/SVGReader.cpp
               src/arc_generator.cpp
-              src/mesh.cpp)
+              src/mesh.cpp
+              src/conewarp.cpp)
 
 ADD_LIBRARY (lib_textiles_veiv ${LIB_INCS} ${LIB_IMPLS} ${LIB_SRCS})
 TARGET_LINK_LIBRARIES (lib_textiles_veiv ${LIBXML2_LIBRARIES} ${Boost_LIBRARIES} OpenMeshCored OpenMeshToolsd)
@@ -47,3 +49,6 @@ TARGET_LINK_LIBRARIES (tests lib_textiles_veiv)
 
 ADD_EXECUTABLE (repeat src/main_repeat.cpp)
 TARGET_LINK_LIBRARIES (repeat lib_textiles_veiv)
+
+ADD_EXECUTABLE (conewarp src/main_conewarp.cpp)
+TARGET_LINK_LIBRARIES (conewarp lib_textiles_veiv)

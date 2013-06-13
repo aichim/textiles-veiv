@@ -11,6 +11,7 @@
 #include <OpenMesh/Core/Geometry/VectorT.hh>
 #include <set>
 #include <vector>
+#include <limits>
 
 
 long GetNumOfElements(const MyMesh &) {
@@ -606,6 +607,53 @@ void SetMeanCurvature(MyMesh* mesh) {
         w = fmax(w, 0) * 255;
         mesh->set_color(mesh->vertex_handle(i), MyMesh::Color(w, w, w));
     }
+}
+std::pair<Eigen::Vector3f,
+Eigen::Vector3f>  AxisAlignedBoundingBox(const MyMesh & mesh) {
+    float maxx = -MAXFLOAT;
+    float maxy = -MAXFLOAT;
+    float maxz = -MAXFLOAT;
+
+    float minx = +MAXFLOAT;
+    float miny = +MAXFLOAT;
+    float minz = +MAXFLOAT;
+
+    for ( MyMesh::VertexIter v_it = mesh.vertices_begin();
+         v_it!= mesh.vertices_end();
+         ++v_it) {
+        const MyMesh::Point & p = mesh.point(v_it);
+        if (p[0] > maxx ) {
+            maxx = p[0];
+        }
+        if (p[0] < minx) {
+            minx = p[0];
+        }
+
+        if (p[1] > maxy) {
+            maxy = p[1];
+        }
+        if (p[1] < miny) {
+            miny = p[1];
+        }
+
+        if (p[2] > maxz) {
+            maxz = p[2];
+        }
+        if (p[2] < minz) {
+            minz = p[2];
+        }
+    }
+    return std::make_pair(Eigen::Vector3f(minx, miny, minz),
+                          Eigen::Vector3f(maxx, maxy, maxz));
+}
+
+void ToFirstQuadrant(MyMesh * mesh) {
+    auto bb = AxisAlignedBoundingBox(*mesh);
+    Substract(mesh, bb.first);
+    Eigen::Vector3f diff = bb.second - bb.first;
+    Eigen::Vector3f normalizer(1/diff(0), 1/diff(1), 1/diff(2));
+    Scale(mesh, normalizer);
+    
 }
 
 std::vector<float> GetColors(const MyMesh & mesh) {

@@ -9,10 +9,11 @@
 #ifndef __MViewer__mesh__
 #define __MViewer__mesh__
 
+
 #include <Eigen/Dense>
 typedef Eigen::MatrixXf Pointset;
-
 #include <OpenMesh/Core/IO/MeshIO.hh>
+
 #include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
 typedef OpenMesh::TriMesh_ArrayKernelT<>  MyMesh;
 typedef std::shared_ptr<MyMesh> MeshPtr;
@@ -49,6 +50,10 @@ Eigen::Vector3f             GetCentroid( const MyMesh & mesh );
 
 MyMesh                      Merge(const MyMesh & a, const MyMesh & b);
 void                        Cat(MyMesh * base, const MyMesh & b);
+
+void                        ToFirstQuadrant(MyMesh * m);
+std::pair<Eigen::Vector3f,
+          Eigen::Vector3f>  AxisAlignedBoundingBox(const MyMesh &);
 
 
 void                        Scale(MyMesh * mesh, float s);
