@@ -27,6 +27,10 @@ namespace veiv
   quadsBetweenCircles (std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > &curr_circle,
                        std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > &prev_circle,
                        std::vector<std::vector<Point3> > &quads);
+
+  void
+  removeDuplicatePoints (const std::vector<std::vector<Point3> > &lines,
+                         std::vector<std::vector<Point3> > &clean);
 }
 
 #endif

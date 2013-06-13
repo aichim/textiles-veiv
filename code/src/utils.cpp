@@ -101,6 +101,7 @@ veiv::extrudeCircleAlongPath (const std::vector<std::vector<Point3> > &model,
   /// For each polygon
   for (size_t poly_i = 0; poly_i < model.size (); ++poly_i)
   {
+    printf ("extruding polygon %d / %zu\n", poly_i, model.size ());
     std::vector <std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > > circles;
     std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > first_circle, last_circle;
 
@@ -128,6 +129,7 @@ veiv::extrudeCircleAlongPath (const std::vector<std::vector<Point3> > &model,
 
     for (int p_i = 0; p_i < model[poly_i].size (); ++p_i)
     {
+      printf ("... segment %d / %zu\n", p_i, model[poly_i].size ());
       Eigen::Vector3d curr (model[poly_i][ p_i      % model[poly_i].size ()].get<0> (),
           model[poly_i][ p_i      % model[poly_i].size ()].get<1> (),
           model[poly_i][ p_i      % model[poly_i].size ()].get<2> ());
@@ -145,8 +147,8 @@ veiv::extrudeCircleAlongPath (const std::vector<std::vector<Point3> > &model,
 
 
       double segment_length = (next - curr).norm ();
-      size_t num_segment_samples = segment_length / sampling_dist - 1;
-      for (size_t s_i = 0; s_i < num_segment_samples; ++s_i)
+      int num_segment_samples = segment_length / sampling_dist - 1;
+      for (int s_i = 0; s_i < num_segment_samples; ++s_i)
       {
         /// Compute the weighted tangent
         Eigen::Vector3d center = (next * static_cast<double> (s_i)  +
@@ -208,4 +210,32 @@ veiv::extrudeCircleAlongPath (const std::vector<std::vector<Point3> > &model,
 
 
   return (true);
+}
+
+
+void
+veiv::removeDuplicatePoints (const std::vector<std::vector<Point3> > &lines,
+                             std::vector<std::vector<Point3> > &clean)
+{
+  for (size_t poly_i = 0; poly_i < lines.size (); ++poly_i)
+  {
+    std::vector<Point3> line;
+    if (lines[poly_i].size () > 0)
+      line.push_back (lines[poly_i].front ());
+
+    for (size_t p_i = 1; p_i < lines[poly_i].size (); ++p_i)
+    {
+      Eigen::Vector3d a (lines[poly_i][p_i].get<0> (),
+                         lines[poly_i][p_i].get<1> (),
+                         lines[poly_i][p_i].get<2> ());
+      Eigen::Vector3d b (lines[poly_i][p_i - 1].get<0> (),
+                         lines[poly_i][p_i - 1].get<1> (),
+                         lines[poly_i][p_i - 1].get<2> ());
+
+      if ((a - b).norm () > std::numeric_limits<double>::epsilon ())
+        line.push_back (lines[poly_i][p_i]);
+    }
+
+    clean.push_back (line);
+  }
 }
