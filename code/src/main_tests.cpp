@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstdlib>
 #include "utils.h"
 #include "drawing.h"
 #include "SVGReader.h"
@@ -10,11 +11,12 @@ int
 main (int argc,
       char **argv) {
 
-  if (argc != 2) {
-		fprintf(stderr, "Usage: %s FILE\n", argv[0]);
+  if (argc != 3) {
+		fprintf(stderr, "Usage: %s FILE RADIUS\n", argv[0]);
 		return 1;
 	}
   std::string svg_file = argv[1];
+  double radius_value = std::atof(argv[2]);
   veiv::Drawing::Ptr drawing(new veiv::Drawing());
   veiv::SVGReader reader;
   bool success = reader.readFile(svg_file, drawing);
@@ -78,7 +80,7 @@ main (int argc,
   //    weave_3d.push_back (polygon);
   //  }
 
-    veiv::generate_arc(curves_2d, intersections, 1, weave_3d);
+    veiv::generate_arc(curves_2d, intersections, radius_value, weave_3d);
     		//std::vector< std::vector<Point3> > &output_curve_points)
 
     std::string output_filename ("output.obj");
