@@ -1,5 +1,5 @@
 #include "arc_generator.h"
-
+#include "utils.h"
 #include "drawing.h"
 
 
@@ -146,8 +146,25 @@ int find_interval(const std::vector<double> &val, double value){
 	return 0;
 }
 
+bool overlap_sequence(int prev_start_idx, int prev_end_idx, int next_start_idx, int n_vtx){
+	int cur_idx = prev_start_idx - 1;
+	while(true){
+		cur_idx = (cur_idx + 1) % n_vtx;
+		if(cur_idx == prev_end_idx){
+			return false;
+		}
 
-void augment_inbetween_sequence(const std::vector<Point2> &curve_seq, int prev_end_idx, int next_start_idx,
+		if(cur_idx == next_start_idx){
+			return true;
+		}
+	}
+
+	return false;
+}
+
+
+void augment_inbetween_sequence(const std::vector<Point2> &curve_seq,
+		const std::deque<bool> &covered_vtx, int prev_start_idx, int prev_end_idx, int next_start_idx,
 		double radius, std::vector<Point3> &augmented_sequence)
 {
 	int m = curve_seq.size();
@@ -155,9 +172,50 @@ void augment_inbetween_sequence(const std::vector<Point2> &curve_seq, int prev_e
 //		return;
 //	}
 
+//	if(covered_vtx[prev_end_idx]){
+//		return;
+//	}
+
+	if(overlap_sequence(prev_start_idx, prev_end_idx, next_start_idx, m)){
+		return;
+	}
+
+	//int prev_end_segment_idx = prev_end_idx - 1;
+	//if(prev_end_segment_idx < 0){
+	//	prev_end_segment_idx += m;
+	//}
+
+	//if(prev_end_segment_idx != next_start_idx){
+		int cur_idx = prev_end_idx;
+		while(true){
+			if(!covered_vtx[cur_idx]){
+				augmented_sequence.push_back(augmented_point2(curve_seq[cur_idx], radius));
+			}
+
+
+			if(cur_idx == next_start_idx){
+				return;
+			}
+
+			cur_idx = (cur_idx + 1) % m;
+		}
+	//}
+}
+
+
+
+void augment_inbetween_sequence(const std::vector<Point2> &curve_seq,
+		const std::deque<bool> &covered_vtx, int prev_end_idx, int next_start_idx,
+		double radius, std::vector<Point3> &augmented_sequence)
+{
+	int m = curve_seq.size();
+
 	int cur_idx = prev_end_idx;
 	while(true){
-		augmented_sequence.push_back(augmented_point2(curve_seq[cur_idx], radius));
+		if(!covered_vtx[cur_idx]){
+			augmented_sequence.push_back(augmented_point2(curve_seq[cur_idx], radius));
+		}
+
 
 		if(cur_idx == next_start_idx){
 			return;
@@ -166,6 +224,7 @@ void augment_inbetween_sequence(const std::vector<Point2> &curve_seq, int prev_e
 		cur_idx = (cur_idx + 1) % m;
 	}
 }
+
 
 void augment_whole_sequence(const std::vector<Point2> &curve_seq,
 		double radius, std::vector<Point3> &augmented_sequence)
@@ -472,6 +531,19 @@ void process_one_curve(const std::vector< std::vector<Point2> > &curve_points,
 	}
 }
 
+void find_covered_vertices(int start_idx, int end_idx, int n_vtx, std::set<int> &covered_idx){
+	int cur_idx = start_idx;
+
+	while(true){
+		cur_idx = (cur_idx + 1) % n_vtx;
+		if(cur_idx == end_idx){
+			return;
+		}
+
+		covered_idx.insert(cur_idx);
+	}
+}
+
 void merge_lifted_sequences(const std::vector< std::vector<Point2> > &curve_points,
 		const std::vector< std::vector<std::pair<int, int> > > &inserted_seq_end_idx,
 		const std::vector< std::vector< std::vector<Point3> > > &inserted_seq,
@@ -480,6 +552,80 @@ void merge_lifted_sequences(const std::vector< std::vector<Point2> > &curve_poin
 {
 	int m = curve_points.size();
 	output_curve_points.resize(m);
+
+
+//	std::string test_file_names[] = {
+//			std::string("test1.obj"),
+//			std::string("test2.obj"),
+//			std::string("test3.obj"),
+//			std::string("test4.obj"),
+//			std::string("test5.obj"),
+//			std::string("test6.obj"),
+//			std::string("test7.obj"),
+//			std::string("test8.obj"),
+//			std::string("test9.obj"),
+//			std::string("test10.obj"),
+//			std::string("test11.obj"),
+//			std::string("test12.obj"),
+//			std::string("test13.obj"),
+//			std::string("test14.obj"),
+//			std::string("test15.obj"),
+//			std::string("test16.obj"),
+//			std::string("test17.obj"),
+//			std::string("test18.obj"),
+//			std::string("test19.obj"),
+//			std::string("test20.obj"),
+//			std::string("test21.obj"),
+//			std::string("test22.obj"),
+//			std::string("test23.obj"),
+//			std::string("test24.obj"),
+//			std::string("test25.obj"),
+//			std::string("test26.obj"),
+//			std::string("test27.obj"),
+//			std::string("test28.obj"),
+//			std::string("test29.obj"),
+//			std::string("test30.obj"),
+//			std::string("test31.obj"),
+//			std::string("test32.obj"),
+//			std::string("test33.obj"),
+//			std::string("ttest1.obj"),
+//			std::string("ttest2.obj"),
+//			std::string("ttest3.obj"),
+//			std::string("ttest4.obj"),
+//			std::string("ttest5.obj"),
+//			std::string("ttest6.obj"),
+//			std::string("ttest7.obj"),
+//			std::string("ttest8.obj"),
+//			std::string("ttest9.obj"),
+//			std::string("ttest10.obj"),
+//			std::string("ttest11.obj"),
+//			std::string("ttest12.obj"),
+//			std::string("ttest13.obj"),
+//			std::string("ttest14.obj"),
+//			std::string("ttest15.obj"),
+//			std::string("ttest16.obj"),
+//			std::string("ttest17.obj"),
+//			std::string("ttest18.obj"),
+//			std::string("ttest19.obj"),
+//			std::string("ttest20.obj"),
+//			std::string("ttest21.obj"),
+//			std::string("ttest22.obj"),
+//			std::string("ttest23.obj"),
+//			std::string("ttest24.obj"),
+//			std::string("ttest25.obj"),
+//			std::string("ttest26.obj"),
+//			std::string("ttest27.obj"),
+//			std::string("ttest28.obj"),
+//			std::string("ttest29.obj"),
+//			std::string("ttest30.obj"),
+//			std::string("ttest31.obj"),
+//			std::string("ttest32.obj"),
+//			std::string("ttest33.obj")
+//	};
+//
+//
+//	int output_idx = 0;
+
 	for(int i = 0; i < m; i++){
 		std::vector< std::pair<int, int> > valid_seq_end_idx;
 		std::vector< std::vector<Point3> > valid_inserted_seq;
@@ -496,13 +642,59 @@ void merge_lifted_sequences(const std::vector< std::vector<Point2> > &curve_poin
 			augment_whole_sequence(curve_points[i], radius, output_curve_points[i]);
 		}
 		else{
+			int n_vtx = curve_points[i].size();
+			std::deque<bool> covered_vtx(n_vtx, false);
 			int p = valid_seq_end_idx.size();
 			for(int j = 0; j < p; j++){
-				output_curve_points[i].insert(output_curve_points[i].end(), valid_inserted_seq[j].begin(),
-						valid_inserted_seq[j].end());
-				augment_inbetween_sequence(curve_points[i], valid_seq_end_idx[j].second, valid_seq_end_idx[(j+1)%p].first,
+				int start_idx = valid_seq_end_idx[j].first, end_idx = valid_seq_end_idx[j].second;
+				int cur_idx = start_idx;
+				while(true){
+					cur_idx = (cur_idx + 1) % n_vtx;
+
+					if(cur_idx == end_idx){
+						break;
+					}
+
+					covered_vtx[cur_idx] = true;
+				}
+			}
+
+			// Find one sequence with un-covered starting point
+			int start_j = -1;
+			for(int j = 0; j < p; j++){
+				if(!covered_vtx[valid_seq_end_idx[j].first]){
+					start_j = j;
+					break;
+				}
+			}
+
+			if(start_j >= 0){
+				for(int k = 0; k < p-1; k++){
+					int cur_j = (start_j + k) % p;
+					int next_j = (cur_j + 1) % p;
+					output_curve_points[i].insert(output_curve_points[i].end(), valid_inserted_seq[cur_j].begin(),
+							valid_inserted_seq[cur_j].end());
+					augment_inbetween_sequence(curve_points[i], covered_vtx, valid_seq_end_idx[cur_j].first, valid_seq_end_idx[cur_j].second, valid_seq_end_idx[next_j].first,
+							radius, output_curve_points[i]);
+				}
+
+				int last_j = (start_j + p-1)%p;
+				output_curve_points[i].insert(output_curve_points[i].end(), valid_inserted_seq[last_j].begin(),
+											valid_inserted_seq[last_j].end());
+				augment_inbetween_sequence(curve_points[i], covered_vtx, valid_seq_end_idx[last_j].second, valid_seq_end_idx[start_j].first,
 						radius, output_curve_points[i]);
 			}
+			else{
+				for(int j = 0; j < p; j++){
+					output_curve_points[i].insert(output_curve_points[i].end(), valid_inserted_seq[j].begin(),
+							valid_inserted_seq[j].end());
+					augment_inbetween_sequence(curve_points[i], covered_vtx, valid_seq_end_idx[j].first, valid_seq_end_idx[j].second, valid_seq_end_idx[(j+1)%p].first,
+							radius, output_curve_points[i]);
+				}
+			}
+
+
+			//saveOBJ (test_file_names[output_idx++], valid_inserted_seq);
 		}
 	}
 }
@@ -633,6 +825,56 @@ void generate_arc_without_duplicate_vertices(const std::vector< std::vector<Poin
 //	}
 //}
 
+Point3 mid_point(const Point3 &p1, const Point3 &p2)
+{
+	return Point3( (p1.get<0>() + p2.get<0>()) * 0.5, (p1.get<1>() + p2.get<1>()) * 0.5,
+			(p1.get<2>() + p2.get<2>()) * 0.5 );
+}
+
+void remove_closeby_vertices(const std::vector<Point3> &vtx_sequence,
+		double eps_dist, std::vector<Point3> &clean_sequence)
+{
+	std::vector<Point3> cur_seq = vtx_sequence;
+
+	while(true){
+		double min_dist = 1e10;
+		int min_dist_idx = -1;
+		int m = cur_seq.size();
+
+		for(int i = 0; i < m; i++){
+			double candidate_length = boost::geometry::distance(cur_seq[i], cur_seq[(i+1)%m]);
+			if(candidate_length < min_dist){
+				min_dist = candidate_length;
+				min_dist_idx = i;
+			}
+		}
+
+		if(min_dist > eps_dist){
+			break;
+		}
+
+		Point3 new_point = mid_point(cur_seq[min_dist_idx], cur_seq[(min_dist_idx+1)%m]);
+
+		std::vector<Point3> new_seq;
+
+		// Replace the two close-by points with their mid points
+		if(min_dist_idx == m-1){
+			new_seq.push_back(new_point);
+			new_seq.insert(new_seq.end(), cur_seq.begin()+1, cur_seq.begin() + (m - 1));
+		}
+		else{
+			new_seq.assign(cur_seq.begin(), cur_seq.begin() + min_dist_idx);
+			new_seq.push_back(new_point);
+			new_seq.insert(new_seq.end(), cur_seq.begin() + (min_dist_idx+2), cur_seq.end());
+		}
+
+		int new_size = new_seq.size();
+		assert( new_size + 1 == m );
+	}
+
+	clean_sequence = cur_seq;
+}
+
 void generate_arc(const std::vector< std::vector<Point2> > &curve_points,
 		const std::vector<IntersectionData> &intersection_data,
 		double radius,
@@ -647,9 +889,14 @@ void generate_arc(const std::vector< std::vector<Point2> > &curve_points,
 	generate_arc_without_duplicate_vertices(simplified_points,
 			intersection_data, radius, output_curve_points);
 
+	double eps_dist = std::min(1e-5, 1e-4 * radius);
+
 	// Add back duplicate points
 	for(unsigned int i = 0; i < output_curve_points.size(); i++){
-		output_curve_points[i].push_back(output_curve_points[i].front());
+		std::vector<Point3> clean_output_curve;
+		remove_closeby_vertices(output_curve_points[i], eps_dist, clean_output_curve);
+		clean_output_curve.push_back(clean_output_curve.front());
+		output_curve_points[i] = clean_output_curve;
 	}
 }
 
