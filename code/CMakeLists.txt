@@ -13,10 +13,10 @@ include_directories (${LIBXML2_INCLUDE_DIR})
 find_package (Boost REQUIRED)
 include_directories (${Boost_INCLUDE_DIR})
 
-#find_package (OpenMesh REQUIRED)
-#include_directories (${OpenMesh_INCLUDE_DIR})
-#
-link_directories (/usr/local/lib/OpenMesh)
+find_package (OpenMesh REQUIRED)
+include_directories (${OPENMESH_INCLUDE_DIR})
+link_directories (${OPENMESH_LIBRARY_DIR})
+
 include_directories (include)
 set (CMAKE_CXX_FLAGS "-std=c++11 -stdlib=libc++ -g3 -Wall -O0")
 
@@ -43,13 +43,13 @@ SET (LIB_SRCS src/utils.cpp
               src/conewarp.cpp)
 
 ADD_LIBRARY (lib_textiles_veiv ${LIB_INCS} ${LIB_IMPLS} ${LIB_SRCS})
-TARGET_LINK_LIBRARIES (lib_textiles_veiv ${LIBXML2_LIBRARIES} ${Boost_LIBRARIES} OpenMeshCored OpenMeshToolsd c++)
+TARGET_LINK_LIBRARIES (lib_textiles_veiv ${LIBXML2_LIBRARIES} ${Boost_LIBRARIES} ${OPENMESH_LIBRARY})
 
 ADD_EXECUTABLE (tests src/main_tests.cpp)
 TARGET_LINK_LIBRARIES (tests lib_textiles_veiv)
 
-ADD_EXECUTABLE (repeat src/main_repeat.cpp)
-TARGET_LINK_LIBRARIES (repeat lib_textiles_veiv)
+#ADD_EXECUTABLE (repeat src/main_repeat.cpp)
+#TARGET_LINK_LIBRARIES (repeat lib_textiles_veiv)
 
-ADD_EXECUTABLE (conewarp src/main_conewarp.cpp)
-TARGET_LINK_LIBRARIES (conewarp lib_textiles_veiv)
+#ADD_EXECUTABLE (conewarp src/main_conewarp.cpp)
+#TARGET_LINK_LIBRARIES (conewarp lib_textiles_veiv)
