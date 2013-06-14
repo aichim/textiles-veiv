@@ -610,13 +610,13 @@ void SetMeanCurvature(MyMesh* mesh) {
 }
 std::pair<Eigen::Vector3f,
 Eigen::Vector3f>  AxisAlignedBoundingBox(const MyMesh & mesh) {
-    float maxx = -MAXFLOAT;
-    float maxy = -MAXFLOAT;
-    float maxz = -MAXFLOAT;
+    float maxx = std::numeric_limits<double>::min();
+    float maxy = std::numeric_limits<double>::min();
+    float maxz = std::numeric_limits<double>::min();
 
-    float minx = +MAXFLOAT;
-    float miny = +MAXFLOAT;
-    float minz = +MAXFLOAT;
+    float minx = std::numeric_limits<double>::max();
+    float miny = std::numeric_limits<double>::max();
+    float minz = std::numeric_limits<double>::max();
 
     for ( MyMesh::VertexIter v_it = mesh.vertices_begin();
          v_it!= mesh.vertices_end();

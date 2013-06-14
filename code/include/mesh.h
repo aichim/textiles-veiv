@@ -13,6 +13,7 @@
 #include <Eigen/Dense>
 typedef Eigen::MatrixXf Pointset;
 #include <OpenMesh/Core/IO/MeshIO.hh>
+#include <memory>
 
 #include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
 typedef OpenMesh::TriMesh_ArrayKernelT<>  MyMesh;
