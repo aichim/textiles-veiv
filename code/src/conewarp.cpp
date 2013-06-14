@@ -8,7 +8,6 @@
 
 #include "conewarp.h"
 #include <cassert>
-#include <boost/geometry.hpp>
 #include <cmath>
 
 namespace veiv {
@@ -19,10 +18,11 @@ namespace veiv {
         assert(rmin > 0);
         assert(phimax > 0);
         // assert(phimax < 2 * 3.14);
+        // Normalize to Unit Cube
         ToFirstQuadrant(mesh);
 
-        float rgain = rmax - rmin;
 
+        float rgain = rmax - rmin;
         for (MyMesh::VertexIter vi = mesh->vertices_begin() ;
              vi != mesh->vertices_end() ;
              ++vi) {
